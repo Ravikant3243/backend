@@ -1,51 +1,49 @@
  const express=require('express');
  const fs=require('fs');
- const product=fs.readFileSync("data.json","utf-8")
+ const data=JSON.parse(fs.readFileSync("data.json","utf-8"))
+ const products=data.products;
  const server=express();
-  // middleware function
 
-    server.use((req,res,next)=>{
+   server.use((req,res,next)=>{
       console.log(req.method,req.ip,req.hostname,new Date(),req.get('User-Agent'));
-      next(); // to not stop further execution
-    });
-//     const auth=(req,res,next)=>{
-//      console.log(req.query); // express ka fayda ye hai ki ye querry ko ek object bna deaga.
-        //   yeh  auth method querry ko acces kar rha . to password hidden nahi hai. isliye password querry se nahi body se bhejenge
-        // jo ki hidden rahega
-//      if(req.query.password==='123'){
-//         next();
-//      }
-
-//      else {
-//          res.sendStatus(401);
-//      }
-
-//    };
-   // server.use(auth); ye to sabpe authentication hai
-//   server.get('/',(req,res)=>{
-//        res.json({"type":'GET'});  
-//     // res.sendFile('/Users/ravik/Desktop/backend/index.html')
-// })
- 
-    server.use(express.json()); // enable server to read only json data   of body
-    const auth=(req,res,next)=>{
-     console.log(req.body); // sirf itna code error dega iske liye express ko body ke data ko read karne ke liye enable karna padega.
-
-    if(req.body.password==='123'){
        next();
-    }
+    });
+server.use(express.json());
 
-    else {
-        res.sendStatus(401);
-    }
+// products REST API  C R U D APIS
+  
+// CREATE (POST)
 
-  };
-server.get('/',auth,(req,res)=>{
-    res.json({"type":"GET","body":{"password":"123"}});  
- // res.sendFile('/Users/ravik/Desktop/backend/index.html')
+server.post('/products',(req,res)=>{
+   products.push(req.body);
+  res.json(products);
 })
- server.post('/',auth,(req,res)=>{
-     res.json({"type":'POST'});
+// READ (GET)
+ server.get('/products',(req,res)=>{
+       res.json(products);
+ })
+  // UPDATE (PUT)
+  server.put('/products/:id',(req,res)=>{
+         const ind=Number((req.params.id))     
+          const index=products.findIndex(p=> p.id===ind);
+             products.splice(index,1,{...req.body,id:ind})
+             res.status(201).json(products);
+  })
+
+ // DELETE ()
+ server.delete('/products/:id',(req,res)=>{
+       const id=Number((req.params.id));
+       const index=products.findIndex(p=> p.id===id);
+        const prod=products[index];
+        products.splice(index,1);
+        res.status(201).json(products);
+ })
+
+server.get('/',(req,res)=>{
+   res.json({"type":'GET'});
+}) 
+ server.post('/',(req,res)=>{
+    res.json({"type":'POST'});
  })
   server.delete('/',(req,res)=>{
      res.json({"type":'delete'});
