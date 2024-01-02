@@ -1,43 +1,24 @@
+const productController=require('./controller/product');
  const express=require('express');
- const fs=require('fs');
- const data=JSON.parse(fs.readFileSync("data.json","utf-8"))
- const products=data.products;
- const server=express();
-
-   server.use((req,res,next)=>{
+  const server=express();
+  server.use((req,res,next)=>{
       console.log(req.method,req.ip,req.hostname,new Date(),req.get('User-Agent'));
        next();
     });
-server.use(express.json());
+   server.use(express.json());
 
 // products REST API  C R U D APIS
   
 // CREATE (POST)
-
-server.post('/products',(req,res)=>{
-   products.push(req.body);
-  res.json(products);
-})
-// READ (GET)
- server.get('/products',(req,res)=>{
-       res.json(products);
- })
+  server.post('/products',productController.createProduct)
+  // READ (GET)
+  server.get('/products',productController.getAllProducts)
+  server.get('/products/:id',productController.getProduct)
   // UPDATE (PUT)
-  server.put('/products/:id',(req,res)=>{
-         const ind=Number((req.params.id))     
-          const index=products.findIndex(p=> p.id===ind);
-             products.splice(index,1,{...req.body,id:ind})
-             res.status(201).json(products);
-  })
+  server.put('/products/:id',productController.updateProduct)
 
  // DELETE ()
- server.delete('/products/:id',(req,res)=>{
-       const id=Number((req.params.id));
-       const index=products.findIndex(p=> p.id===id);
-        const prod=products[index];
-        products.splice(index,1);
-        res.status(201).json(products);
- })
+ server.delete('/products/:id',productController.deleteProduct)
 
 server.get('/',(req,res)=>{
    res.json({"type":'GET'});
